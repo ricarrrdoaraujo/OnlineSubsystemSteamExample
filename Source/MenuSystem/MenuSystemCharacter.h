@@ -77,11 +77,13 @@ protected:
 	void JoinGameSession();
 
 	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
+
+	// OnFindSessionsComplete will be called in response to the delegate broadcast sent by the session interface once the action of find sessions has been completed
 	void OnFindSessionsComplete(bool bWasSuccessful);
 
 private:
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
-	FOnCancelFindSessionsCompleteDelegate FindSessionsCompleteDelegate;
+	FOnFindSessionsCompleteDelegate FindSessionsCompleteDelegate;
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
 };
 
