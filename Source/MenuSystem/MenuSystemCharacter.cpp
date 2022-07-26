@@ -18,11 +18,12 @@
 AMenuSystemCharacter::AMenuSystemCharacter():
 	/*
 	Bind the function to the delegate:
-	We use CreateUObject to construct a new delegate object of type FOnCreateSessionCompleteDelegateand FOnFindSessionsCompleteDelegate.
-	As we initialize it we pass into the the constructor the user object (this) and the callback function (OnCreateSessionComplete and OnFindSessionsComplete)
+	We use CreateUObject to construct a new delegate object of type FOnCreateSessionCompleteDelegateand, FOnFindSessionsCompleteDelegate and JoinSessionCompleteDelegate.
+	As we initialize it we pass into the the constructor the user object (this) and the callback function (OnCreateSessionComplete, OnFindSessionsComplete, OnJoinSessionComplete)
 	*/ 
 	CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSessionComplete)),
-	FindSessionsCompleteDelegate(FOnFindSessionsCompleteDelegate::CreateUObject(this,  &ThisClass::OnFindSessionsComplete))
+	FindSessionsCompleteDelegate(FOnFindSessionsCompleteDelegate::CreateUObject(this,  &ThisClass::OnFindSessionsComplete)),
+	JoinSessionCompleteDelegate(FOnJoinSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnJoinSessionComplete))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -197,6 +198,11 @@ void AMenuSystemCharacter::JoinGameSession()
 
 void AMenuSystemCharacter::OnFindSessionsComplete(bool bWasSuccessful)
 {
+	if (!OnlineSessionInterface.IsValid())
+	{
+		return;
+	}
+
 	for (auto Result : SessionSearch->SearchResults)
 	{
 		FString Id = Result.GetSessionIdStr();
@@ -217,11 +223,42 @@ void AMenuSystemCharacter::OnFindSessionsComplete(bool bWasSuccessful)
 		}
 		if (MatchType == FString("FreeForAll"))
 		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(
+					-1,
+					15.f,
+					FColor::Cyan,
+					FString::Printf(TEXT("Joining Match Type %s"), *MatchType)
+				);
+			}
+
+			OnlineSessionInterface->AddOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegate);
+
+			const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+			OnlineSessionInterface->JoinSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, Result);
+		}
+
+	}
+}
+
+void AMenuSystemCharacter::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+{
+	if (!OnlineSessionInterface.IsValid())
+	{
+		return;
+	}
+
+	FString Address;
+	if (OnlineSessionInterface->GetResolvedConnectString(NAME_GameSession, Address))
+	{
+		if (GEngine)
+		{
 			GEngine->AddOnScreenDebugMessage(
 				-1,
 				15.f,
-				FColor::Cyan,
-				FString::Printf(TEXT("Joining Match Type %s"), *MatchType)
+				FColor::Yellow,
+				FString::Printf(TEXT("Connect string: %s"), *Address)
 			);
 		}
 	}
