@@ -16,6 +16,11 @@
 // AMenuSystemCharacter
 
 AMenuSystemCharacter::AMenuSystemCharacter():
+	/*
+	Bind the function to the delegate:
+	We use CreateUObject to construct a new delegate object of type FOnCreateSessionCompleteDelegateand FOnFindSessionsCompleteDelegate.
+	As we initialize it we pass into the the constructor the user object (this) and the callback function (OnCreateSessionComplete and OnFindSessionsComplete)
+	*/ 
 	CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSessionComplete)),
 	FindSessionsCompleteDelegate(FOnFindSessionsCompleteDelegate::CreateUObject(this,  &ThisClass::OnFindSessionsComplete))
 {
@@ -116,6 +121,7 @@ void AMenuSystemCharacter::CreateGameSession()
 		OnlineSessionInterface->DestroySession(NAME_GameSession);
 	}
 
+	//Add delegate to the session interface delegate list
 	OnlineSessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
 
 	TSharedPtr<FOnlineSessionSettings> SessionSettings = MakeShareable(new FOnlineSessionSettings());
@@ -124,6 +130,7 @@ void AMenuSystemCharacter::CreateGameSession()
 	SessionSettings->bAllowJoinInProgress = true;
 	SessionSettings->bAllowJoinViaPresence = true;
 	SessionSettings->bShouldAdvertise = true;
+	// bUsesPresence connect to others players at the same region
 	SessionSettings->bUsesPresence = true;
 	SessionSettings->bUseLobbiesIfAvailable = true;
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
@@ -166,14 +173,17 @@ void AMenuSystemCharacter::JoinGameSession()
 		return;
 	}
 
+	//Add delegate to the delegate list
 	OnlineSessionInterface->AddOnFindSessionsCompleteDelegate_Handle(FindSessionsCompleteDelegate);
 
 	SessionSearch = MakeShareable(new FOnlineSessionSearch());
 	SessionSearch->MaxSearchResults = 10000;
 	SessionSearch->bIsLanQuery = false;
+	//Make sure the sessions the we find are using presence
 	SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	//Once FindSessions is completed our callback will the called
 	OnlineSessionInterface->FindSessions(*LocalPlayer->GetPreferredUniqueNetId(), SessionSearch.ToSharedRef());
 
 }
