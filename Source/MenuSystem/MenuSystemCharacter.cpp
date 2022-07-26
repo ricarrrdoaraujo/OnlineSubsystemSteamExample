@@ -133,6 +133,7 @@ void AMenuSystemCharacter::CreateGameSession()
 	// bUsesPresence connect to others players at the same region
 	SessionSettings->bUsesPresence = true;
 	SessionSettings->bUseLobbiesIfAvailable = true;
+	SessionSettings->Set(FName("MatchType"), FString("FreeForAll"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	OnlineSessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *SessionSettings);
 }
@@ -149,6 +150,12 @@ void AMenuSystemCharacter::OnCreateSessionComplete(FName SessionName, bool bWasS
 				FColor::Red,
 				FString::Printf(TEXT("Created session: %s"), *SessionName.ToString())
 			);
+		}
+		//If bWasSuccessful is true we want to travel to the Lobby level and open it as a listen server
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->ServerTravel(FString("/Game/ThirdPerson/Maps/Lobby?listen"));
 		}
 	}
 	else 
@@ -194,6 +201,11 @@ void AMenuSystemCharacter::OnFindSessionsComplete(bool bWasSuccessful)
 	{
 		FString Id = Result.GetSessionIdStr();
 		FString User = Result.Session.OwningUserName;
+
+		// Get function will fill MatchType variable if this particular session has the key FName("MatchType")
+		FString MatchType;
+		Result.Session.SessionSettings.Get(FName("MatchType"), MatchType);
+
 		if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(
@@ -201,6 +213,15 @@ void AMenuSystemCharacter::OnFindSessionsComplete(bool bWasSuccessful)
 				15.f,
 				FColor::Cyan,
 				FString::Printf(TEXT("Id: %s, User: %s"), *Id, *User)
+			);
+		}
+		if (MatchType == FString("FreeForAll"))
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Cyan,
+				FString::Printf(TEXT("Joining Match Type %s"), *MatchType)
 			);
 		}
 	}
