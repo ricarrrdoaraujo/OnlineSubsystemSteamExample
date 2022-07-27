@@ -8,6 +8,14 @@
 
 #include "MultiplayerSessionsSubsystem.generated.h"
 
+/*
+	Declaring my own custom delegates for the Menu class to bind callbacks to
+	MULTICAST - multiple classes can bind their functions to it
+    DYNAMIC - delegate can be serialized and can be saved or loaded from within a blueprint graph
+*/
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMultiplayerOnCreateSessionComplete, bool, bWasSuccessful); 
+
+
 /**
  * 
  */
@@ -28,17 +36,22 @@ public:
 	void DestroySession();
 	void StartSession();
 
+	/*
+		Our own custom delegates for the Menu class to bind callbacks to
+	*/
+	FMultiplayerOnCreateSessionComplete MultiplayerOnCreateSessionComplete;
+
 protected:
 
 	/*
 		Internal callbacks to the delegates we'll add to the Online SessionInterface delegate list.
 		This don't need to be called outside this class.
 	*/
-	void OnCreateSessionComplete(FName SessionName, bool bWalSuccessful);
+	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
 	void OnFindSessionComplete(bool bWalSuccessful);
 	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
-	void OnDestroySessionComplete(FName SessionName, bool bWalSuccessful);
-	void OnStartSessionComplete(FName SessionName, bool bWalSuccessful);
+	void OnDestroySessionComplete(FName SessionName, bool bWasSuccessful);
+	void OnStartSessionComplete(FName SessionName, bool bWasSuccessful);
 
 private:
 	IOnlineSessionPtr SessionInterface;
