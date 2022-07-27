@@ -31,7 +31,7 @@ public:
 protected:
 
 	/*
-		Internal callbacks to the delegates we'll add to the Online SessiionInterface delegate list.
+		Internal callbacks to the delegates we'll add to the Online SessionInterface delegate list.
 		This don't need to be called outside this class.
 	*/
 	void OnCreateSessionComplete(FName SessionName, bool bWalSuccessful);
