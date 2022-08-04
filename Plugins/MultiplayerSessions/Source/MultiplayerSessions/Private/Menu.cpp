@@ -141,6 +141,15 @@ void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 	if (Result != EOnJoinSessionCompleteResult::Success)
 	{
 		JoinButton->SetIsEnabled(true);
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Yellow,
+				FString(TEXT("Failed to enter session!"))
+			);
+		}
 	}
 }
 
@@ -167,6 +176,12 @@ void UMenu::JoinButtonClicked()
 	JoinButton->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem)
 	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			15.f,
+			FColor::Yellow,
+			FString(TEXT("Join button clicked"))
+		);
 		MultiplayerSessionsSubsystem->FindSessions(10000);
 	}
 }

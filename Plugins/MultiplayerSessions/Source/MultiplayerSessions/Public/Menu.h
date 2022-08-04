@@ -41,16 +41,16 @@ protected:
 private:
 
 	UPROPERTY(meta = (BindWidget))
-		class UButton* HostButton;
+	class UButton* HostButton;
 
 	UPROPERTY(meta = (BindWidget))
-		UButton* JoinButton;
+	class UButton* JoinButton;
 
 	UFUNCTION()
-		void HostButtonClicked();
+	void HostButtonClicked();
 
 	UFUNCTION()
-		void JoinButtonClicked();
+	void JoinButtonClicked();
 
 	void MenuTearDown();
 
